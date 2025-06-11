@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -55,20 +56,10 @@ private fun DiaryContent(entry: DiaryEntry) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .systemBarsPadding()
             .verticalScroll(rememberScrollState())  // 내용 스크롤 가능하게
     ) {
-        // 대표 이미지
-        Image(
-            painter = rememberAsyncImagePainter(entry.imageUri),
-            contentDescription = "Diary Image",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(15.dp))
 
         // 제목 + 감정
         Row(
@@ -84,6 +75,19 @@ private fun DiaryContent(entry: DiaryEntry) {
 
             EmotionTag(emotion = entry.selectedEmotion)
         }
+
+       Spacer(modifier = Modifier.height(15.dp))
+
+        // 대표 이미지
+        Image(
+            painter = rememberAsyncImagePainter(entry.imageUri),
+            contentDescription = "Diary Image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -107,23 +111,16 @@ private fun DiaryContent(entry: DiaryEntry) {
 
 @Composable
 private fun EmotionTag(emotion: String) {
-    val color = when (emotion) {
-        "행복" -> Color.Yellow
-        "슬픔" -> Color.Blue
-        "기쁨" -> Color.Magenta
-        "분노" -> Color.Red
-        "평온" -> Color.Green
-        else -> Color.Gray
-    }
+    val color = getEmotionColor(emotion)
 
     Box(
         modifier = Modifier
-            .background(color.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp))
+            .background(color, shape = RoundedCornerShape(12.dp))
             .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
         Text(
             text = emotion,
-            color = color,
+            color = Color.White,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold
         )

@@ -143,7 +143,7 @@ fun DiaryCard(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .background(Color(0xFFFFA07A), shape = RoundedCornerShape(12.dp))
+                        .background(getEmotionColor(entry.selectedEmotion), shape = RoundedCornerShape(12.dp))
                         .padding(horizontal = 10.dp)
                 ) {
                     Text(

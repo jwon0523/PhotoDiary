@@ -239,9 +239,9 @@ fun DiaryWriteScreen(
                             val diaries = db.diaryDao().getAllDiaries()
                             if (diaries.isNotEmpty()) {
                                 val lastEntry = diaries.last()
-                                // 1️⃣ DB 삭제
+                                // DB 삭제
                                 db.diaryDao().deleteDiaryById(lastEntry.id)
-                                // 2️⃣ 이미지 삭제
+                                // 이미지 삭제
                                 deleteImage(context, lastEntry.imageUri)
                             }
                         }
