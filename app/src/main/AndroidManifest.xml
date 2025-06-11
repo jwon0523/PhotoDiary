@@ -2,6 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -13,9 +20,9 @@
         android:theme="@style/Theme.OneFrame"
         tools:targetApi="31">
         <activity
-            android:name=".CalendarActivity"
+            android:name=".DiaryWriteScreen"
             android:exported="false"
-            android:label="@string/title_activity_calendar"
+            android:label="@string/title_activity_diary_write_screen"
             android:theme="@style/Theme.OneFrame" />
         <activity
             android:name=".MainActivity"

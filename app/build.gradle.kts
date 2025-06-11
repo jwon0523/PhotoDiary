@@ -1,7 +1,11 @@
+import org.gradle.kotlin.dsl.annotationProcessor
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
 }
 
 android {
@@ -40,7 +44,18 @@ android {
 }
 
 dependencies {
-
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    // 자바용 Room
+//    annotationProcessor("androidx.room:room-compiler:2.6.1")
+    // kotlin Room
+    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    // Coil for Compose
+    implementation("io.coil-kt:coil-compose:2.2.2")
+//    // FlowLayout
+//    implementation("com.google.accompanist:accompanist-flowlayout:0.30.0")
+    implementation("androidx.compose.material:material-icons-extended:x.x.x") // Material icon
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,8 +64,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("com.google.accompanist:accompanist-flowlayout:0.30.0") // FlowLayout
-    implementation("androidx.compose.material:material-icons-extended:x.x.x") // Material icon
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

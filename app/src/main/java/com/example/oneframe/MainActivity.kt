@@ -1,6 +1,6 @@
 package com.example.oneframe
 
-import android.R.attr.text
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -39,16 +39,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
 import java.time.format.DateTimeFormatter
 
@@ -73,137 +70,39 @@ class MainActivity : ComponentActivity() {
         EmotionEntry("평온", 0.13f, Color(0xFFFFEB3B))    // Yellow
     )
 
-    val imageWithDates = listOf(
-        ImageWithDate(R.drawable.ewha_village, "25.01.13"),
-        ImageWithDate(R.drawable.japan, "24.01.04"),
-        ImageWithDate(R.drawable.sky, "24.01.23"),
-        ImageWithDate(R.drawable.suwon, "25.05.23")
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            var titleText by remember { mutableStateOf("") }
-            var textContents by remember { mutableStateOf("") }
+            val context = LocalContext.current
+            val db = DatabaseProvider.getDatabase(context)  // 싱글톤으로 가져오기
+
             OneFrameTheme {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .systemBarsPadding()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .shadow(1.5.dp, shape = RoundedCornerShape(8.dp))
-                            .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    ) {
-                        TextField(
-                            value = titleText,
-                            onValueChange = { titleText = it },
-                            label = { Text("제목") },
-                            placeholder = { Text("오늘의 하루의 제목을 지어봐요") },
-                            maxLines = 1,
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                errorIndicatorColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                                errorContainerColor = Color.Transparent
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-
-                        Spacer(modifier = Modifier.height(5.dp))
-
-                        Image(
-                            painter = painterResource(id = R.drawable.japan),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop, // 꽉 차게 채우기
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(250.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .padding(horizontal = 8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(5.dp))
-
-                        TextField(
-                            value = textContents,
-                            onValueChange = { textContents = it },
-                            placeholder = { Text("오늘의 하루는 어떠셨나요?") },
-                            maxLines = Int.MAX_VALUE,  // 입력 가능한 줄 수 제한 해제
-                            singleLine = false,
-                            colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                errorIndicatorColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                disabledContainerColor = Color.Transparent,
-                                errorContainerColor = Color.Transparent
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(450.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(
-                                space = 12.dp,
-                                alignment = Alignment.End
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        ) {
-                            Button(
-                                onClick = { /* 버튼 클릭 시 동작 */ },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent,   // 버튼 배경을 투명으로
-                                    contentColor = Color.Black            // 버튼 텍스트 색상 지정
-                                ),
-                                modifier = Modifier
-                                    .shadow(1.5.dp, shape = RoundedCornerShape(20.dp))
-                                    .background(Color.White, shape = RoundedCornerShape(20.dp))
-                            ) {
-                                Text("임시 기록")
-                            }
-
-                            Button(
-                                onClick = { /* 버튼 클릭 시 동작 */ },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Transparent,   // 버튼 배경을 투명으로
-                                    contentColor = Color.White            // 버튼 텍스트 색상 지정
-                                ),
-                                modifier = Modifier
-                                    .shadow(1.5.dp, shape = RoundedCornerShape(20.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.tertiary,
-                                        shape = RoundedCornerShape(20.dp)
-                                    )
-                            ) {
-                                Text("기록하기")
-                            }
-                        }
-                    }
-                }
+                HomeScreen(
+                    emotionDatas,
+                    db
+                )
+//                DiaryWriteScreen(
+//                    context,
+//                    db
+//                )
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    emotionDatas: List<EmotionEntry>,
+    db: DiaryDatabase
+) {
+    val diaryListState = remember { mutableStateOf<List<DiaryEntry>>(emptyList()) }
+
+    // DB에서 데이터 불러오기
+    LaunchedEffect(Unit) {
+        diaryListState.value = db.diaryDao().getAllDiaries()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -223,7 +122,7 @@ fun HomeScreen() {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        ImageCarousel(imageWithDates)
+        ImageCarousel(diaryListState)
 
         Spacer(modifier = Modifier.height(15.dp))
 
@@ -234,11 +133,10 @@ fun HomeScreen() {
         EmotionDonutChartWithLegend(emotionDatas)
     }
 }
-}
 
 @Composable
 fun ImageCarousel(
-    imageList: List<ImageWithDate>,
+    diaryListState: MutableState<List<DiaryEntry>>,
     modifier: Modifier = Modifier
 ) {
     val carouselSize = 280.dp
@@ -250,14 +148,15 @@ fun ImageCarousel(
         horizontalArrangement = Arrangement.spacedBy(8.dp),  // 항목 사이 간격
 //        contentPadding = PaddingValues(horizontal = 16.dp)   // 양쪽 여백
     ) {
-        items(imageList) { item ->
+        // LazyRow나 LazyColumn에서 반복 시에는 items이 스크롤 최적화가 더 잘됨
+        items(diaryListState.value) { entry ->
             Box(
                 modifier = Modifier
                     .width(carouselSize) // 아이템 너비
                     .fillMaxHeight()
             ) {
                 Image(
-                    painter = painterResource(id = item.drawableResId),
+                    painter = rememberAsyncImagePainter(entry.imageUri),
                     contentDescription = null,
                     contentScale = ContentScale.Crop, // 꽉 차게 채우기
                     modifier = Modifier
@@ -266,7 +165,7 @@ fun ImageCarousel(
                 )
 
                 Text(
-                    text = item.date,
+                    text = "{entry.createdAt}",
                     modifier = Modifier.align(Alignment.BottomStart),
                     color = Color.White,
                     fontSize = 12.sp
