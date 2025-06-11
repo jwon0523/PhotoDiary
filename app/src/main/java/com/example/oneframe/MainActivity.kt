@@ -1,7 +1,6 @@
 package com.example.oneframe
 
-import android.R.attr.entries
-import android.media.Image
+import android.R.attr.text
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -17,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.oneframe.ui.theme.OneFrameTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,14 +39,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.oneframe.ui.theme.Typography
 import java.time.format.DateTimeFormatter
-import kotlin.collections.mapOf
 
 // Example emotion entries with color and percent
 data class EmotionEntry(
@@ -70,16 +74,18 @@ class MainActivity : ComponentActivity() {
     )
 
     val imageWithDates = listOf(
-        ImageWithDate(R.drawable.ewha_village, "13일"),
-        ImageWithDate(R.drawable.japan, "13일"),
-        ImageWithDate(R.drawable.sky, "13일"),
-        ImageWithDate(R.drawable.suwon, "13일")
+        ImageWithDate(R.drawable.ewha_village, "25.01.13"),
+        ImageWithDate(R.drawable.japan, "24.01.04"),
+        ImageWithDate(R.drawable.sky, "24.01.23"),
+        ImageWithDate(R.drawable.suwon, "25.05.23")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var titleText by remember { mutableStateOf("") }
+            var textContents by remember { mutableStateOf("") }
             OneFrameTheme {
                 Column(
                     modifier = Modifier
@@ -87,32 +93,147 @@ class MainActivity : ComponentActivity() {
                         .systemBarsPadding()
                         .padding(horizontal = 16.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    Text(
-                        text = "OneFrame,\n당신의 하루를 사진 한장과 기록하세요",
-                        color = Color.Black,
-                        style = Typography.titleLarge,
-                        modifier = Modifier
-                            .height(50.dp)
-                            .fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    ImageCarousel(imageWithDates)
-
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    WeekCalendar()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .shadow(1.5.dp, shape = RoundedCornerShape(8.dp))
+                            .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    ) {
+                        TextField(
+                            value = titleText,
+                            onValueChange = { titleText = it },
+                            label = { Text("제목") },
+                            placeholder = { Text("오늘의 하루의 제목을 지어봐요") },
+                            maxLines = 1,
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                errorContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
 
-                    Spacer(modifier = Modifier.height(50.dp))
+                        Spacer(modifier = Modifier.height(5.dp))
 
-                    EmotionDonutChartWithLegend(emotionDatas)
+                        Image(
+                            painter = painterResource(id = R.drawable.japan),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop, // 꽉 차게 채우기
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(250.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        TextField(
+                            value = textContents,
+                            onValueChange = { textContents = it },
+                            placeholder = { Text("오늘의 하루는 어떠셨나요?") },
+                            maxLines = Int.MAX_VALUE,  // 입력 가능한 줄 수 제한 해제
+                            singleLine = false,
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                errorContainerColor = Color.Transparent
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(450.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(15.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(
+                                space = 12.dp,
+                                alignment = Alignment.End
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = { /* 버튼 클릭 시 동작 */ },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,   // 버튼 배경을 투명으로
+                                    contentColor = Color.Black            // 버튼 텍스트 색상 지정
+                                ),
+                                modifier = Modifier
+                                    .shadow(1.5.dp, shape = RoundedCornerShape(20.dp))
+                                    .background(Color.White, shape = RoundedCornerShape(20.dp))
+                            ) {
+                                Text("임시 기록")
+                            }
+
+                            Button(
+                                onClick = { /* 버튼 클릭 시 동작 */ },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Transparent,   // 버튼 배경을 투명으로
+                                    contentColor = Color.White            // 버튼 텍스트 색상 지정
+                                ),
+                                modifier = Modifier
+                                    .shadow(1.5.dp, shape = RoundedCornerShape(20.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.tertiary,
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                            ) {
+                                Text("기록하기")
+                            }
+                        }
+                    }
                 }
-            }
         }
     }
+}
+
+@Composable
+fun HomeScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding()
+            .padding(horizontal = 16.dp)
+    ) {
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Text(
+            text = "OneFrame,\n당신의 하루를 사진 한장과 기록하세요",
+            color = Color.Black,
+            style = Typography.titleLarge,
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        ImageCarousel(imageWithDates)
+
+        Spacer(modifier = Modifier.height(15.dp))
+
+        WeekCalendar()
+
+        Spacer(modifier = Modifier.height(50.dp))
+
+        EmotionDonutChartWithLegend(emotionDatas)
+    }
+}
 }
 
 @Composable
@@ -146,9 +267,9 @@ fun ImageCarousel(
 
                 Text(
                     text = item.date,
-                    modifier = Modifier.align(Alignment.TopStart),
+                    modifier = Modifier.align(Alignment.BottomStart),
                     color = Color.White,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 12.sp
                 )
             }
         }
