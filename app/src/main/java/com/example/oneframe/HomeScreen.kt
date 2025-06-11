@@ -48,6 +48,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Map.entry
 
 @Composable
 fun HomeScreen(
@@ -56,7 +57,9 @@ fun HomeScreen(
 ) {
     val diaryListState = remember { mutableStateOf<List<DiaryEntry>>(emptyList()) }
     val emotionEntriesState = remember { mutableStateOf<List<EmotionEntry>>(emptyList()) }
-    val diaryDatesState = remember { mutableStateOf<List<LocalDate>>(emptyList()) }
+    val diaryDateToIdMap = remember {
+        mutableStateOf<Map<LocalDate, Int>>(emptyMap())
+    }
 
     // DB에서 데이터 불러오기
     LaunchedEffect(Unit) {
@@ -65,10 +68,11 @@ fun HomeScreen(
         emotionEntriesState.value = calculateEmotionEntries(diaries)
 
         // 작성한 일기 날짜만 추출 (LocalDate로 변환)
-        val diaryDates = diaries.map {
-            LocalDate.ofEpochDay(it.createdAt / (24 * 60 * 60 * 1000))
+        val dateIdMap = diaries.associate { diary ->
+            val date = LocalDate.ofEpochDay(diary.createdAt / (24 * 60 * 60 * 1000))
+            date to diary.id
         }
-        diaryDatesState.value = diaryDates
+        diaryDateToIdMap.value = dateIdMap
     }
 
     Column(
@@ -97,7 +101,10 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        WeekCalendar(diaryDatesState.value)
+        WeekCalendar(
+            router,
+            diaryDateToIdMap.value
+        )
 
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -128,6 +135,9 @@ fun ImageCarousel(
                 modifier = Modifier
                     .width(carouselSize) // 아이템 너비
                     .fillMaxHeight()
+                    .clickable {
+                        router.navigateTo(BottomNavItem.DiaryDetail(entry.id))
+                    }
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(entry.imageUri),
@@ -151,7 +161,8 @@ fun ImageCarousel(
 
 @Composable
 fun WeekCalendar(
-    diaryDate: List<LocalDate> = emptyList(),
+    router: NavigationRouter,
+    dateToIdMap: Map<LocalDate, Int>,
     modifier: Modifier = Modifier
 ) {
     var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
@@ -211,7 +222,7 @@ fun WeekCalendar(
         ) {
             items(daysInMonth) { date ->
                 val isSelected = date == selectedDate
-                val hasDiary = diaryDate.contains(date)
+                val diaryId = dateToIdMap[date]
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -219,7 +230,11 @@ fun WeekCalendar(
                         .width(60.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(if (isSelected) Color(0xFF6C4AB6) else Color(0xFFF0F0F0))
-                        .clickable { selectedDate = date }
+                        .clickable {
+                            if(diaryId != null) {
+                                router.navigateTo(BottomNavItem.DiaryDetail(diaryId))
+                            }
+                        }
                         .padding(vertical = 8.dp)
                 ) {
                     Text(
@@ -237,7 +252,7 @@ fun WeekCalendar(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    if(hasDiary) {
+                    if(diaryId != null) {
                         Box(
                             modifier = Modifier
                                 .size(4.dp)

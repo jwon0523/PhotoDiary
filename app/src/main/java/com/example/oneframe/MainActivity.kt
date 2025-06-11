@@ -1,5 +1,6 @@
 package com.example.oneframe
 
+import android.content.Context
 import android.media.Image
 import android.os.Bundle
 import android.util.Log
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Home
@@ -65,18 +67,75 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-// Example emotion entries with color and percent
 data class EmotionEntry(
     val label: String,
     val percent: Float,
     val color: Color
 )
+
+@Entity
+data class DiaryEntry(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String,
+    val selectedEmotion: String,
+    val content: String,
+    val imageUri: String,
+    val createdAt: Long,
+    val updatedAt: Long
+)
+
+@Dao
+interface DiaryDao {
+    @Insert
+    suspend fun insertDiary(entry: DiaryEntry)
+
+    @Query("SELECT * FROM DiaryEntry")
+    suspend fun getAllDiaries(): List<DiaryEntry>
+
+    @Query("SELECT * FROM DiaryEntry WHERE id = :entryId")
+    suspend fun getDiaryById(entryId: Int): DiaryEntry?
+
+    @Query("DELETE FROM DiaryEntry WHERE id = :entryId")
+    suspend fun deleteDiaryById(entryId: Int)
+}
+
+@Database(entities = [DiaryEntry::class], version = 1)
+abstract class DiaryDatabase : RoomDatabase() {
+    abstract fun diaryDao(): DiaryDao
+}
+
+object DatabaseProvider {
+    @Volatile
+    private var INSTANCE: DiaryDatabase? = null
+
+    fun getDatabase(context: Context): DiaryDatabase {
+        return INSTANCE ?: synchronized(this) {
+            val instance = Room.databaseBuilder(
+                context.applicationContext,
+                DiaryDatabase::class.java,
+                "diary_database"
+            )
+                .fallbackToDestructiveMigration() // DB 스키마 변경 시 기존 데이터 삭제
+                .build()
+            INSTANCE = instance
+            instance
+        }
+    }
+}
 
 sealed class BottomNavItem(
     val route: String,
@@ -88,6 +147,11 @@ sealed class BottomNavItem(
     object DiaryWrite : BottomNavItem("write", Icons.Default.Edit, "작성하기")
     object MyPage : BottomNavItem("my", Icons.Default.Person, "마이페이지")
     object EmotionStats : BottomNavItem("emotionStats", Icons.Default.BarChart, "감정 통계")
+
+    // id를 받는 라우트는 일반 객체가 아닌 data class로
+    data class DiaryDetail(val id: Int) : BottomNavItem("diary/{id}", Icons.Default.Description, "일기 상세") {
+        fun createRoute(): String = "diary/$id"
+    }
 }
 
 fun Long.toFormattedDate(): String {
@@ -101,12 +165,17 @@ class NavigationRouter(private val navController: NavController) {
 
     fun navigateTo(screen: BottomNavItem) {
         val route = when (screen) {
-            is BottomNavItem.Home -> BottomNavItem.Home.route
-            is BottomNavItem.DiaryWrite -> BottomNavItem.DiaryWrite.route
-            is BottomNavItem.DiaryCardList -> BottomNavItem.DiaryCardList.route
-            is BottomNavItem.EmotionStats -> BottomNavItem.EmotionStats.route
-            is BottomNavItem.MyPage -> BottomNavItem.MyPage.route
+            is BottomNavItem.Home -> screen.route
+            is BottomNavItem.DiaryWrite -> screen.route
+            is BottomNavItem.DiaryCardList -> screen.route
+            is BottomNavItem.EmotionStats -> screen.route
+            is BottomNavItem.MyPage -> screen.route
+            is BottomNavItem.DiaryDetail -> screen.createRoute()
         }
+        navController.navigate(route)
+    }
+
+    fun navigateToId(route: String) {
         navController.navigate(route)
     }
 
@@ -174,6 +243,15 @@ class MainActivity : ComponentActivity() {
 
                         composable(BottomNavItem.MyPage.route) {
                             MyPageScreen()
+                        }
+
+                        composable("diary/{id}") { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: return@composable
+                            DiaryDetailScreen(
+                                diaryId = id,
+                                db = db,
+                                router = router
+                            )
                         }
                     }
                 }
