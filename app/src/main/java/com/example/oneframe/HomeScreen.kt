@@ -139,7 +139,7 @@ fun ImageCarousel(
                 )
 
                 Text(
-                    text = "${entry.createdAt.toFormattedDate()}",
+                    text = entry.createdAt.toFormattedDate(),
                     modifier = Modifier.align(Alignment.BottomStart),
                     color = Color.White,
                     fontSize = 12.sp

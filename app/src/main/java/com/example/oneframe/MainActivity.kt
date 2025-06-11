@@ -77,30 +77,13 @@ data class EmotionEntry(
     val color: Color
 )
 
-class NavigationRouter(private val navController: NavController) {
-
-    fun navigateTo(screen: BottomNavItem) {
-        val route = when (screen) {
-            is BottomNavItem.Home -> BottomNavItem.Home.route
-            is BottomNavItem.DiaryWrite -> BottomNavItem.DiaryWrite.route
-//            BottomNavItem.DiaryList -> TODO()
-//            BottomNavItem.MyPage -> TODO()
-        }
-        navController.navigate(route)
-    }
-
-    fun popBack() {
-        navController.popBackStack()
-    }
-}
-
 sealed class BottomNavItem(
     val route: String,
     val icon: ImageVector,
     val label: String
 ) {
     object Home : BottomNavItem("home", Icons.Default.Home, "홈")
-//    object DiaryList : BottomNavItem("list", Icons.Default.FormatListNumbered, "일기 목록")
+    object DiaryCardList : BottomNavItem("list", Icons.Default.FormatListNumbered, "일기 목록")
     object DiaryWrite : BottomNavItem("write", Icons.Default.Edit, "작성하기")
 //    object MyPage : BottomNavItem("my", Icons.Default.Person, "마이페이지")
 }
@@ -110,6 +93,23 @@ fun Long.toFormattedDate(): String {
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
         .format(DateTimeFormatter.ofPattern("yy.MM.dd"))
+}
+
+class NavigationRouter(private val navController: NavController) {
+
+    fun navigateTo(screen: BottomNavItem) {
+        val route = when (screen) {
+            is BottomNavItem.Home -> BottomNavItem.Home.route
+            is BottomNavItem.DiaryWrite -> BottomNavItem.DiaryWrite.route
+            is BottomNavItem.DiaryCardList -> BottomNavItem.DiaryCardList.route
+//            BottomNavItem.MyPage -> TODO()
+        }
+        navController.navigate(route)
+    }
+
+    fun popBack() {
+        navController.popBackStack()
+    }
 }
 
 class MainActivity : ComponentActivity() {
@@ -127,37 +127,47 @@ class MainActivity : ComponentActivity() {
             val selectedItem = remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
 
             OneFrameTheme {
-                Scaffold(
-                    bottomBar = {
-                        CustomBottomBar(
-                            selectedItem = selectedItem.value,
-                            onItemSelected = { item ->
-                                selectedItem.value = item
-                                router.navigateTo(item) // 클릭 시 Navigation 처리
-                            }
-                        )
-                    }
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = BottomNavItem.Home.route,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable(BottomNavItem.Home.route) {
-                            HomeScreen(
-                                router,
-                                db
-                            )
-                        }
-                        composable(BottomNavItem.DiaryWrite.route) {
-                            DiaryWriteScreen(
-                                router,
-                                context,
-                                db
-                            )
-                        }
-                    }
-                }
+//                Scaffold(
+//                    bottomBar = {
+//                        CustomBottomBar(
+//                            selectedItem = selectedItem.value,
+//                            onItemSelected = { item ->
+//                                selectedItem.value = item
+//                                router.navigateTo(item) // 클릭 시 Navigation 처리
+//                            }
+//                        )
+//                    }
+//                ) { innerPadding ->
+//                    NavHost(
+//                        navController = navController,
+//                        startDestination = BottomNavItem.Home.route,
+//                        modifier = Modifier.padding(innerPadding)
+//                    ) {
+//                        composable(BottomNavItem.Home.route) {
+//                            HomeScreen(
+//                                router,
+//                                db
+//                            )
+//                        }
+//
+//                        composable(BottomNavItem.DiaryCardList.route) {
+//                            DiaryCardListScreen(
+//                                router,
+//                                db
+//                            )
+//                        }
+//
+//                        composable(BottomNavItem.DiaryWrite.route) {
+//                            DiaryWriteScreen(
+//                                router,
+//                                context,
+//                                db
+//                            )
+//                        }
+//                    }
+//                }
+
+                DiaryListScreen(db)
 
             }
         }
@@ -179,7 +189,7 @@ fun CustomBottomBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomBarItem(item = BottomNavItem.Home, selectedItem, onItemSelected)
-//            BottomBarItem(item = BottomNavItem.DiaryList, selectedItem, onItemSelected)
+            BottomBarItem(item = BottomNavItem.DiaryCardList, selectedItem, onItemSelected)
             Spacer(modifier = Modifier.width(64.dp)) // 중앙 버튼 자리 비움
 //            BottomBarItem(item = BottomNavItem.MyPage, selectedItem, onItemSelected)
         }
