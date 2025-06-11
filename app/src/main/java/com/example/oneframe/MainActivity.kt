@@ -44,6 +44,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import com.example.oneframe.ui.theme.Typography
 import java.time.format.DateTimeFormatter
 import kotlin.collections.mapOf
 
@@ -90,9 +91,8 @@ class MainActivity : ComponentActivity() {
 
                     Text(
                         text = "OneFrame,\n당신의 하루를 사진 한장과 기록하세요",
-                        fontSize = 20.sp,
                         color = Color.Black,
-                        fontWeight = FontWeight.Bold,
+                        style = Typography.titleLarge,
                         modifier = Modifier
                             .height(50.dp)
                             .fillMaxWidth()
@@ -316,8 +316,7 @@ fun EmotionDonutChartWithLegend(
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = entry.label,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp,
+                            style = Typography.labelMedium,
                             color = Color.Black,
                             modifier = Modifier.width(50.dp)
                         )
