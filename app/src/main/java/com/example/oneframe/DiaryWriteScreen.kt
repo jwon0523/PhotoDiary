@@ -265,7 +265,7 @@ fun DiaryWriteScreen(
                             } else {
                                 MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                             }
-                            val savedUri = saveBitmapToInternalStorage(context, bitmap)
+                            val savedUri = saveBitmapToAppStorage(context, bitmap)
 
                             val currentTime = System.currentTimeMillis()
 
@@ -306,6 +306,45 @@ fun DiaryWriteScreen(
         }
     }
 }
+
+/**
+ * 비트맵 이미지를 앱 전용 저장소(내부저장소 전용 폴더)에 저장하고,
+ * 저장된 파일의 Uri를 반환하는 함수.
+ *
+ * @param context Context
+ * @param bitmap 저장할 Bitmap 객체
+ * @return 저장된 이미지의 Uri
+ */
+fun saveBitmapToAppStorage(context: Context, bitmap: Bitmap): Uri {
+    // 앱 전용 저장소의 images 디렉토리 경로를 가져오기
+    val imagesDir = File(context.filesDir, "images")
+    if (!imagesDir.exists()) {
+        imagesDir.mkdir() // images 폴더가 없으면 생성
+    }
+
+    // 고유한 파일명 생성
+    val filename = "IMG_${System.currentTimeMillis()}.jpg"
+    val imageFile = File(imagesDir, filename)
+
+    // 파일 출력 스트림 열기
+    val fos: OutputStream = FileOutputStream(imageFile)
+
+    // 비트맵을 JPEG로 압축해서 파일에 저장
+    fos.use {
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+    }
+
+    // 저장된 파일의 Uri를 반환
+    return Uri.fromFile(imageFile)
+}
+
+// 이미지 불러오기
+fun getAppImages(context: Context): List<File> {
+    val imagesDir = File(context.filesDir, "images")
+    return imagesDir.listFiles()?.toList() ?: emptyList()
+}
+
+
 
 // 내부 저장소에 비트맵 저장 함수
 fun saveBitmapToInternalStorage(context: Context, bitmap: Bitmap): Uri? {
