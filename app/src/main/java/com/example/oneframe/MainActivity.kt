@@ -88,14 +88,6 @@ class NavigationRouter(private val navController: NavController) {
 }
 
 class MainActivity : ComponentActivity() {
-    val emotionDatas = listOf(
-        EmotionEntry("행복", 0.32f, Color(0xFF2196F3)),   // Blue
-        EmotionEntry("슬픔", 0.15f, Color(0xFF00BCD4)),   // Cyan
-        EmotionEntry("기쁨", 0.23f, Color(0xFFE040FB)),   // Magenta
-        EmotionEntry("분노", 0.17f, Color(0xFFFF9800)),   // Orange
-        EmotionEntry("평온", 0.13f, Color(0xFFFFEB3B))    // Yellow
-    )
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -103,9 +95,10 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val db = DatabaseProvider.getDatabase(context)  // 싱글톤으로 가져오기
 
+            val navController = rememberNavController()
+            val router = remember { NavigationRouter(navController) }
+
             OneFrameTheme {
-                val navController = rememberNavController()
-                val router = remember { NavigationRouter(navController) }
                 NavHost(
                     navController = navController,
                     startDestination = Screen.Home.route
@@ -113,7 +106,6 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.Home.route) {
                         HomeScreen(
                             router,
-                            emotionDatas,
                             db
                         )
                     }

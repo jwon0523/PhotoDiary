@@ -52,14 +52,16 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HomeScreen(
     router: NavigationRouter,
-    emotionDatas: List<EmotionEntry>,
     db: DiaryDatabase
 ) {
     val diaryListState = remember { mutableStateOf<List<DiaryEntry>>(emptyList()) }
+    val emotionEntriesState = remember { mutableStateOf<List<EmotionEntry>>(emptyList()) }
 
     // DB에서 데이터 불러오기
     LaunchedEffect(Unit) {
-        diaryListState.value = db.diaryDao().getAllDiaries()
+        val diaries = db.diaryDao().getAllDiaries()
+        diaryListState.value = diaries
+        emotionEntriesState.value = calculateEmotionEntries(diaries)
     }
 
     Column(
@@ -92,7 +94,9 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        EmotionDonutChartWithLegend(emotionDatas)
+        EmotionDonutChartWithLegend(
+            entries = emotionEntriesState.value
+        )
 
         Button(onClick = { router.navigateTo(Screen.DiaryWrite) }) {
             Text("하루 기록하기")
@@ -236,6 +240,41 @@ fun WeekCalendar(
                 }
             }
         }
+    }
+}
+
+fun calculateEmotionEntries(diaryList: List<DiaryEntry>): List<EmotionEntry> {
+    val emotionCountMap = mutableMapOf<String, Int>()
+
+    // 감정별 개수 세기
+    diaryList.forEach { entry ->
+        val emotion = entry.selectedEmotion
+        if (emotion.isNotBlank()) {
+            emotionCountMap[emotion] = emotionCountMap.getOrDefault(emotion, 0) + 1
+        }
+    }
+
+    val total = emotionCountMap.values.sum().toFloat()
+
+    // EmotionEntry 리스트로 변환
+    return emotionCountMap.map { (emotion, count) ->
+        EmotionEntry(
+            label = emotion,
+            percent = count / total,
+            color = getEmotionColor(emotion)
+        )
+    }
+}
+
+// 감정별 색상 매칭 함수
+fun getEmotionColor(emotion: String): Color {
+    return when (emotion) {
+        "행복" -> Color(0xFFE57373)
+        "슬픔" -> Color(0xFF64B5F6)
+        "기쁨" -> Color(0xFFFFB74D)
+        "분노" -> Color(0xFFBA68C8)
+        "평온" -> Color(0xFF4DB6AC)
+        else -> Color.LightGray
     }
 }
 
