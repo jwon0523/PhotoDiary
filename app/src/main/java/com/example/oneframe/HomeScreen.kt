@@ -56,12 +56,19 @@ fun HomeScreen(
 ) {
     val diaryListState = remember { mutableStateOf<List<DiaryEntry>>(emptyList()) }
     val emotionEntriesState = remember { mutableStateOf<List<EmotionEntry>>(emptyList()) }
+    val diaryDatesState = remember { mutableStateOf<List<LocalDate>>(emptyList()) }
 
     // DB에서 데이터 불러오기
     LaunchedEffect(Unit) {
         val diaries = db.diaryDao().getAllDiaries()
         diaryListState.value = diaries
         emotionEntriesState.value = calculateEmotionEntries(diaries)
+
+        // 작성한 일기 날짜만 추출 (LocalDate로 변환)
+        val diaryDates = diaries.map {
+            LocalDate.ofEpochDay(it.createdAt / (24 * 60 * 60 * 1000))
+        }
+        diaryDatesState.value = diaryDates
     }
 
     Column(
@@ -90,7 +97,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        WeekCalendar()
+        WeekCalendar(diaryDatesState.value)
 
         Spacer(modifier = Modifier.height(50.dp))
 
@@ -148,6 +155,7 @@ fun ImageCarousel(
 
 @Composable
 fun WeekCalendar(
+    diaryDate: List<LocalDate> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
@@ -207,6 +215,7 @@ fun WeekCalendar(
         ) {
             items(daysInMonth) { date ->
                 val isSelected = date == selectedDate
+                val hasDiary = diaryDate.contains(date)
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -223,14 +232,16 @@ fun WeekCalendar(
                         fontWeight = FontWeight.Bold,
                         color = if (isSelected) Color.White else Color.Black
                     )
+
                     Text(
                         text = date.dayOfWeek.name.take(3),
                         fontSize = 12.sp,
                         color = if (isSelected) Color.White else Color.Gray
                     )
+
                     Spacer(modifier = Modifier.height(4.dp))
-                    // 아래 점 표시
-                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+
+                    if(hasDiary) {
                         Box(
                             modifier = Modifier
                                 .size(4.dp)
