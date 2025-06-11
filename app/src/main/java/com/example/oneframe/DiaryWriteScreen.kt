@@ -182,12 +182,13 @@ fun DiaryWriteScreen(
             .fillMaxSize()
             .systemBarsPadding()
             .padding(horizontal = 16.dp)
+            .padding(bottom = 15.dp)
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(5.dp))
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .shadow(1.5.dp, shape = RoundedCornerShape(8.dp))
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
         ) {
@@ -264,10 +265,10 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp)
             )
 
-            Spacer(modifier = Modifier.height(15.dp))
+            // Column에서 wieght으로 Spacer 적용하면 세로 최대 비율 적용됨
+            Spacer(modifier = Modifier.weight(1f))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(
@@ -276,7 +277,7 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 8.dp)
+                    .padding(end = 8.dp, bottom = 10.dp)
             ) {
                 Button(
                     onClick = {

@@ -38,6 +38,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
@@ -85,7 +86,8 @@ sealed class BottomNavItem(
     object Home : BottomNavItem("home", Icons.Default.Home, "홈")
     object DiaryCardList : BottomNavItem("list", Icons.Default.FormatListNumbered, "일기 목록")
     object DiaryWrite : BottomNavItem("write", Icons.Default.Edit, "작성하기")
-//    object MyPage : BottomNavItem("my", Icons.Default.Person, "마이페이지")
+    object MyPage : BottomNavItem("my", Icons.Default.Person, "마이페이지")
+    object EmotionStats : BottomNavItem("emotionStats", Icons.Default.BarChart, "감정 통계")
 }
 
 fun Long.toFormattedDate(): String {
@@ -102,7 +104,8 @@ class NavigationRouter(private val navController: NavController) {
             is BottomNavItem.Home -> BottomNavItem.Home.route
             is BottomNavItem.DiaryWrite -> BottomNavItem.DiaryWrite.route
             is BottomNavItem.DiaryCardList -> BottomNavItem.DiaryCardList.route
-//            BottomNavItem.MyPage -> TODO()
+            is BottomNavItem.EmotionStats -> BottomNavItem.EmotionStats.route
+            is BottomNavItem.MyPage -> BottomNavItem.MyPage.route
         }
         navController.navigate(route)
     }
@@ -127,48 +130,53 @@ class MainActivity : ComponentActivity() {
             val selectedItem = remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
 
             OneFrameTheme {
-//                Scaffold(
-//                    bottomBar = {
-//                        CustomBottomBar(
-//                            selectedItem = selectedItem.value,
-//                            onItemSelected = { item ->
-//                                selectedItem.value = item
-//                                router.navigateTo(item) // 클릭 시 Navigation 처리
-//                            }
-//                        )
-//                    }
-//                ) { innerPadding ->
-//                    NavHost(
-//                        navController = navController,
-//                        startDestination = BottomNavItem.Home.route,
-//                        modifier = Modifier.padding(innerPadding)
-//                    ) {
-//                        composable(BottomNavItem.Home.route) {
-//                            HomeScreen(
-//                                router,
-//                                db
-//                            )
-//                        }
-//
-//                        composable(BottomNavItem.DiaryCardList.route) {
-//                            DiaryCardListScreen(
-//                                router,
-//                                db
-//                            )
-//                        }
-//
-//                        composable(BottomNavItem.DiaryWrite.route) {
-//                            DiaryWriteScreen(
-//                                router,
-//                                context,
-//                                db
-//                            )
-//                        }
-//                    }
-//                }
+                Scaffold(
+                    bottomBar = {
+                        CustomBottomBar(
+                            selectedItem = selectedItem.value,
+                            onItemSelected = { item ->
+                                selectedItem.value = item
+                                router.navigateTo(item) // 클릭 시 Navigation 처리
+                            }
+                        )
+                    }
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = BottomNavItem.Home.route,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable(BottomNavItem.Home.route) {
+                            HomeScreen(
+                                router,
+                                db
+                            )
+                        }
 
-                DiaryListScreen(db)
+                        composable(BottomNavItem.DiaryCardList.route) {
+                            DiaryListScreen(
+                                router,
+                                db
+                            )
+                        }
 
+                        composable(BottomNavItem.DiaryWrite.route) {
+                            DiaryWriteScreen(
+                                router,
+                                context,
+                                db
+                            )
+                        }
+
+                        composable(BottomNavItem.EmotionStats.route) {
+                            EmotionStatsScreen()
+                        }
+
+                        composable(BottomNavItem.MyPage.route) {
+                            MyPageScreen()
+                        }
+                    }
+                }
             }
         }
     }
@@ -185,13 +193,37 @@ fun CustomBottomBar(
                 .fillMaxWidth()
                 .height(64.dp)
                 .background(Color.White),
-            horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BottomBarItem(item = BottomNavItem.Home, selectedItem, onItemSelected)
-            BottomBarItem(item = BottomNavItem.DiaryCardList, selectedItem, onItemSelected)
-            Spacer(modifier = Modifier.width(64.dp)) // 중앙 버튼 자리 비움
-//            BottomBarItem(item = BottomNavItem.MyPage, selectedItem, onItemSelected)
+            BottomBarItem(
+                item = BottomNavItem.Home,
+                selectedItem = selectedItem,
+                onItemSelected = onItemSelected,
+                modifier = Modifier.weight(1f)
+            )
+
+            BottomBarItem(
+                item = BottomNavItem.DiaryCardList,
+                selectedItem = selectedItem,
+                onItemSelected = onItemSelected,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.weight(1f)) // 중앙 버튼 영역 비움
+
+            BottomBarItem(
+                item = BottomNavItem.EmotionStats,
+                selectedItem = selectedItem,
+                onItemSelected = onItemSelected,
+                modifier = Modifier.weight(1f)
+            )
+
+            BottomBarItem(
+                item = BottomNavItem.MyPage,
+                selectedItem = selectedItem,
+                onItemSelected = onItemSelected,
+                modifier = Modifier.weight(1f)
+            )
         }
 
         // 중앙의 큰 버튼
@@ -217,14 +249,15 @@ fun CustomBottomBar(
 fun BottomBarItem(
     item: BottomNavItem,
     selectedItem: BottomNavItem,
-    onItemSelected: (BottomNavItem) -> Unit
+    onItemSelected: (BottomNavItem) -> Unit,
+    modifier: Modifier
 ) {
     val isSelected = item == selectedItem
     val color = if (isSelected) Color(0xFF00CDB4) else Color.Gray
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+        modifier = modifier
             .clickable { onItemSelected(item) }
     ) {
         Icon(

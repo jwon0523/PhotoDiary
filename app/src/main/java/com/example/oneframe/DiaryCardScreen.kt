@@ -45,6 +45,7 @@ import java.time.LocalDate
 
 @Composable
 fun DiaryListScreen(
+    router: NavigationRouter,
     db: DiaryDatabase
 ) {
     // 상태 관리: 일기 리스트와 로딩 상태
