@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Parcelable
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -64,6 +65,7 @@ import com.example.oneframe.ui.theme.OneFrameTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -115,11 +117,12 @@ object DatabaseProvider {
     }
 }
 
+@Parcelize
 data class DiaryFormState(
     var title: String = "",
     var content: String = "",
     var selectedImageUri: Uri? = null
-)
+) : Parcelable
 
 @Composable
 fun DiaryWriteScreen(
@@ -127,12 +130,15 @@ fun DiaryWriteScreen(
     context: Context,
     db: DiaryDatabase
 ) {
-    var diaryFormState by remember { mutableStateOf(DiaryFormState()) }
+//    var diaryFormState by remember { mutableStateOf(DiaryFormState()) }
+    var title: String by remember { mutableStateOf("") }
+    var content: String by remember { mutableStateOf("") }
+    var selectedImageUri: Uri? by remember { mutableStateOf(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        diaryFormState.selectedImageUri = uri
+        selectedImageUri = uri
     }
 
     Column(
@@ -150,8 +156,8 @@ fun DiaryWriteScreen(
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
         ) {
             TextField(
-                value = diaryFormState.title,
-                onValueChange = { diaryFormState.title = it },
+                value = title,
+                onValueChange = { title = it },
                 label = { Text("제목") },
                 placeholder = { Text("오늘의 하루의 제목을 지어봐요") },
                 maxLines = 1,
@@ -181,10 +187,10 @@ fun DiaryWriteScreen(
                         galleryLauncher.launch("image/*")
                     }
             ) {
-                if(diaryFormState.selectedImageUri == null) {
+                if(selectedImageUri == null) {
                     Text("사진 선택")
                 } else {
-                    diaryFormState.selectedImageUri?.let { uri ->
+                    selectedImageUri?.let { uri ->
                         Image(
                             painter = rememberAsyncImagePainter(uri),
                             contentDescription = null,
@@ -198,8 +204,8 @@ fun DiaryWriteScreen(
             Spacer(modifier = Modifier.height(5.dp))
 
             TextField(
-                value = diaryFormState.content,
-                onValueChange = { diaryFormState.content = it },
+                value = content,
+                onValueChange = { content = it },
                 placeholder = { Text("오늘의 하루는 어떠셨나요?") },
                 maxLines = Int.MAX_VALUE,  // 입력 가능한 줄 수 제한 해제
                 singleLine = false,
@@ -242,7 +248,9 @@ fun DiaryWriteScreen(
                             }
                         }
 
-                        diaryFormState = DiaryFormState() // 초기화
+                        title = ""
+                        content = ""
+                        selectedImageUri = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,   // 버튼 배경을 투명으로
@@ -257,7 +265,7 @@ fun DiaryWriteScreen(
 
                 Button(
                     onClick = {
-                        diaryFormState.selectedImageUri?.let { uri ->
+                        selectedImageUri?.let { uri ->
                             // 선택된 이미지를 내부 저장소에 저장
                             val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 val source = ImageDecoder.createSource(context.contentResolver, uri)
@@ -271,8 +279,8 @@ fun DiaryWriteScreen(
 
                             // Room DB에 저장
                             val entry = DiaryEntry(
-                                title = diaryFormState.title,
-                                content = diaryFormState.content,
+                                title = title,
+                                content = content,
                                 imageUri = savedUri.toString(),
                                 createdAt = currentTime,
                                 updatedAt = currentTime
@@ -282,7 +290,9 @@ fun DiaryWriteScreen(
                             }
 
                             // 상태 초기화
-                            diaryFormState = DiaryFormState()
+                            title = ""
+                            content = ""
+                            selectedImageUri = null
 
                             router.navigateTo(Screen.Home)
                         }
