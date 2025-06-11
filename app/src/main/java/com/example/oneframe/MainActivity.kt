@@ -270,7 +270,7 @@ fun CustomBottomBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.surface),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomBarItem(
@@ -310,7 +310,7 @@ fun CustomBottomBar(
                 .size(64.dp)
                 .align(Alignment.TopCenter)
                 .offset(y = (-24).dp) // 위로 올려서 float처럼 보이게
-                .background(Color(0xFF00CDB4), shape = CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape)
                 .clickable { onItemSelected(BottomNavItem.DiaryWrite) },
             contentAlignment = Alignment.Center
         ) {
@@ -331,7 +331,7 @@ fun BottomBarItem(
     modifier: Modifier
 ) {
     val isSelected = item == selectedItem
-    val color = if (isSelected) Color(0xFF00CDB4) else Color.Gray
+    val color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Gray
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

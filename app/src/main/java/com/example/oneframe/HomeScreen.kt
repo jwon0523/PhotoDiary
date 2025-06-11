@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -81,18 +82,18 @@ fun HomeScreen(
             .systemBarsPadding()
             .padding(horizontal = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(25.dp))
 
         Text(
             text = "OneFrame,\n당신의 하루를 사진 한장과 기록하세요",
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             style = Typography.titleLarge,
             modifier = Modifier
                 .height(50.dp)
                 .fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(35.dp))
 
         ImageCarousel(
             router,
@@ -193,7 +194,7 @@ fun WeekCalendar(
                     modifier = Modifier.size(24.dp),
                     imageVector = Icons.Filled.ChevronLeft,
                     contentDescription = "",
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
 
@@ -208,7 +209,7 @@ fun WeekCalendar(
                     modifier = Modifier.size(24.dp),
                     imageVector = Icons.Filled.ChevronRight,
                     contentDescription = "",
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
         }
@@ -229,7 +230,7 @@ fun WeekCalendar(
                     modifier = Modifier
                         .width(60.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) Color(0xFF6C4AB6) else Color(0xFFF0F0F0))
+                        .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color(0xFFF0F0F0))
                         .clickable {
                             if(diaryId != null) {
                                 router.navigateTo(BottomNavItem.DiaryDetail(diaryId))
@@ -256,7 +257,10 @@ fun WeekCalendar(
                         Box(
                             modifier = Modifier
                                 .size(4.dp)
-                                .background(Color.Green, CircleShape)
+                                .background(
+                                    MaterialTheme.colorScheme.secondary,
+                                    CircleShape
+                                )
                         )
                     }
                 }
@@ -365,15 +369,15 @@ fun EmotionDonutChartWithLegend(
                         Text(
                             text = entry.label,
                             style = Typography.labelMedium,
-                            color = Color.Black,
-                            modifier = Modifier.width(50.dp)
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 10.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "${(entry.percent * 100).toInt()}%",
                             fontWeight = FontWeight.Normal,
                             fontSize = 15.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }

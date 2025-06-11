@@ -113,7 +113,7 @@ fun DiaryCard(
         shape = RoundedCornerShape(7.dp),
         elevation = CardDefaults.cardElevation(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -144,11 +144,11 @@ fun DiaryCard(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .background(getEmotionColor(entry.selectedEmotion), shape = RoundedCornerShape(12.dp))
-                        .padding(horizontal = 10.dp)
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
                     Text(
                         text = entry.selectedEmotion,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelSmall,
                         color = Color.White
                     )
                 }
@@ -161,9 +161,8 @@ fun DiaryCard(
                     // 제목
                     Text(
                         text = entry.title,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 25.sp,
-                        color = Color.Black,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -171,9 +170,8 @@ fun DiaryCard(
                     Text(
                         text = entry.createdAt.toFormattedDate(),
                         maxLines = 1,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Light,
-                        color = Color.Black
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
