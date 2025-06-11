@@ -37,12 +37,23 @@ import java.time.YearMonth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.BlendMode.Companion.Screen
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -50,10 +61,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 // Example emotion entries with color and percent
@@ -63,21 +77,14 @@ data class EmotionEntry(
     val color: Color
 )
 
-sealed class Screen(val route: String) {
-    object Home : Screen("home")
-    object DiaryWrite : Screen("dirayWrite")
-    data class DiaryDetail(val id: Int) : Screen("diary/{id}") {
-        fun createRoute() = "diary/$id"
-    }
-}
-
 class NavigationRouter(private val navController: NavController) {
 
-    fun navigateTo(screen: Screen) {
+    fun navigateTo(screen: BottomNavItem) {
         val route = when (screen) {
-            is Screen.Home -> Screen.Home.route
-            is Screen.DiaryWrite -> Screen.DiaryWrite.route
-            is Screen.DiaryDetail -> screen.createRoute()
+            is BottomNavItem.Home -> BottomNavItem.Home.route
+            is BottomNavItem.DiaryWrite -> BottomNavItem.DiaryWrite.route
+//            BottomNavItem.DiaryList -> TODO()
+//            BottomNavItem.MyPage -> TODO()
         }
         navController.navigate(route)
     }
@@ -85,6 +92,24 @@ class NavigationRouter(private val navController: NavController) {
     fun popBack() {
         navController.popBackStack()
     }
+}
+
+sealed class BottomNavItem(
+    val route: String,
+    val icon: ImageVector,
+    val label: String
+) {
+    object Home : BottomNavItem("home", Icons.Default.Home, "홈")
+//    object DiaryList : BottomNavItem("list", Icons.Default.FormatListNumbered, "일기 목록")
+    object DiaryWrite : BottomNavItem("write", Icons.Default.Edit, "작성하기")
+//    object MyPage : BottomNavItem("my", Icons.Default.Person, "마이페이지")
+}
+
+fun Long.toFormattedDate(): String {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .format(DateTimeFormatter.ofPattern("yy.MM.dd"))
 }
 
 class MainActivity : ComponentActivity() {
@@ -98,31 +123,40 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             val router = remember { NavigationRouter(navController) }
 
+            // 선택된 탭 상태를 remember로 관리
+            val selectedItem = remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
+
             OneFrameTheme {
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Home.route
-                ) {
-                    composable(Screen.Home.route) {
-                        HomeScreen(
-                            router,
-                            db
+                Scaffold(
+                    bottomBar = {
+                        CustomBottomBar(
+                            selectedItem = selectedItem.value,
+                            onItemSelected = { item ->
+                                selectedItem.value = item
+                                router.navigateTo(item) // 클릭 시 Navigation 처리
+                            }
                         )
                     }
-                    composable(Screen.DiaryWrite.route) {
-                        DiaryWriteScreen(
-                            router,
-                            context,
-                            db
-                        )
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = BottomNavItem.Home.route,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable(BottomNavItem.Home.route) {
+                            HomeScreen(
+                                router,
+                                db
+                            )
+                        }
+                        composable(BottomNavItem.DiaryWrite.route) {
+                            DiaryWriteScreen(
+                                router,
+                                context,
+                                db
+                            )
+                        }
                     }
-//                    composable(
-//                        Screen.DiaryDetail("").route,
-//                        arguments = listOf(navArgument("id") { type = NavType.IntType })
-//                    ) { backStackEntry ->
-//                        val id = backStackEntry.arguments?.getInt("id") ?: 0
-//                        DiaryDetailScreen(router, id)
-//                    }
                 }
 
             }
@@ -130,7 +164,71 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Composable
+fun CustomBottomBar(
+    selectedItem: BottomNavItem,
+    onItemSelected: (BottomNavItem) -> Unit
+) {
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .background(Color.White),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BottomBarItem(item = BottomNavItem.Home, selectedItem, onItemSelected)
+//            BottomBarItem(item = BottomNavItem.DiaryList, selectedItem, onItemSelected)
+            Spacer(modifier = Modifier.width(64.dp)) // 중앙 버튼 자리 비움
+//            BottomBarItem(item = BottomNavItem.MyPage, selectedItem, onItemSelected)
+        }
 
+        // 중앙의 큰 버튼
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-24).dp) // 위로 올려서 float처럼 보이게
+                .background(Color(0xFF00CDB4), shape = CircleShape)
+                .clickable { onItemSelected(BottomNavItem.DiaryWrite) },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "작성",
+                tint = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun BottomBarItem(
+    item: BottomNavItem,
+    selectedItem: BottomNavItem,
+    onItemSelected: (BottomNavItem) -> Unit
+) {
+    val isSelected = item == selectedItem
+    val color = if (isSelected) Color(0xFF00CDB4) else Color.Gray
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable { onItemSelected(item) }
+    ) {
+        Icon(
+            imageVector = item.icon,
+            contentDescription = item.label,
+            tint = color
+        )
+        Text(
+            text = item.label,
+            color = color,
+            fontSize = 12.sp
+        )
+    }
+}
 
 
 

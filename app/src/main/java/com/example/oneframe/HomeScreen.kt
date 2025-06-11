@@ -104,10 +104,6 @@ fun HomeScreen(
         EmotionDonutChartWithLegend(
             entries = emotionEntriesState.value
         )
-
-        Button(onClick = { router.navigateTo(Screen.DiaryWrite) }) {
-            Text("하루 기록하기")
-        }
     }
 }
 
@@ -143,7 +139,7 @@ fun ImageCarousel(
                 )
 
                 Text(
-                    text = "${entry.createdAt}",
+                    text = "${entry.createdAt.toFormattedDate()}",
                     modifier = Modifier.align(Alignment.BottomStart),
                     color = Color.White,
                     fontSize = 12.sp

@@ -183,7 +183,7 @@ fun DiaryWriteScreen(
             .systemBarsPadding()
             .padding(horizontal = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Column(
             modifier = Modifier
@@ -264,7 +264,7 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp)
+                    .height(280.dp)
             )
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -276,6 +276,7 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(end = 8.dp)
             ) {
                 Button(
                     onClick = {
@@ -338,7 +339,7 @@ fun DiaryWriteScreen(
                             content = ""
                             selectedImageUri = null
 
-                            router.navigateTo(Screen.Home)
+                            router.navigateTo(BottomNavItem.Home)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
