@@ -115,21 +115,24 @@ object DatabaseProvider {
     }
 }
 
+data class DiaryFormState(
+    var title: String = "",
+    var content: String = "",
+    var selectedImageUri: Uri? = null
+)
+
 @Composable
 fun DiaryWriteScreen(
     router: NavigationRouter,
     context: Context,
     db: DiaryDatabase
 ) {
-    var titleText by remember { mutableStateOf("") }
-    var contentText by remember { mutableStateOf("") }
-
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var diaryFormState by remember { mutableStateOf(DiaryFormState()) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        selectedImageUri = uri
+        diaryFormState.selectedImageUri = uri
     }
 
     Column(
@@ -147,8 +150,8 @@ fun DiaryWriteScreen(
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
         ) {
             TextField(
-                value = titleText,
-                onValueChange = { titleText = it },
+                value = diaryFormState.title,
+                onValueChange = { diaryFormState.title = it },
                 label = { Text("제목") },
                 placeholder = { Text("오늘의 하루의 제목을 지어봐요") },
                 maxLines = 1,
@@ -178,10 +181,10 @@ fun DiaryWriteScreen(
                         galleryLauncher.launch("image/*")
                     }
             ) {
-                if(selectedImageUri == null) {
+                if(diaryFormState.selectedImageUri == null) {
                     Text("사진 선택")
                 } else {
-                    selectedImageUri?.let { uri ->
+                    diaryFormState.selectedImageUri?.let { uri ->
                         Image(
                             painter = rememberAsyncImagePainter(uri),
                             contentDescription = null,
@@ -195,8 +198,8 @@ fun DiaryWriteScreen(
             Spacer(modifier = Modifier.height(5.dp))
 
             TextField(
-                value = contentText,
-                onValueChange = { contentText = it },
+                value = diaryFormState.content,
+                onValueChange = { diaryFormState.content = it },
                 placeholder = { Text("오늘의 하루는 어떠셨나요?") },
                 maxLines = Int.MAX_VALUE,  // 입력 가능한 줄 수 제한 해제
                 singleLine = false,
@@ -239,10 +242,7 @@ fun DiaryWriteScreen(
                             }
                         }
 
-                        // 상태 초기화
-                        titleText = ""
-                        contentText = ""
-                        selectedImageUri = null
+                        diaryFormState = DiaryFormState() // 초기화
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,   // 버튼 배경을 투명으로
@@ -257,7 +257,7 @@ fun DiaryWriteScreen(
 
                 Button(
                     onClick = {
-                        selectedImageUri?.let { uri ->
+                        diaryFormState.selectedImageUri?.let { uri ->
                             // 선택된 이미지를 내부 저장소에 저장
                             val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 val source = ImageDecoder.createSource(context.contentResolver, uri)
@@ -271,8 +271,8 @@ fun DiaryWriteScreen(
 
                             // Room DB에 저장
                             val entry = DiaryEntry(
-                                title = titleText,
-                                content = contentText,
+                                title = diaryFormState.title,
+                                content = diaryFormState.content,
                                 imageUri = savedUri.toString(),
                                 createdAt = currentTime,
                                 updatedAt = currentTime
@@ -282,9 +282,7 @@ fun DiaryWriteScreen(
                             }
 
                             // 상태 초기화
-                            titleText = ""
-                            contentText = ""
-                            selectedImageUri = null
+                            diaryFormState = DiaryFormState()
 
                             router.navigateTo(Screen.Home)
                         }
