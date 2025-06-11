@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -115,7 +116,11 @@ object DatabaseProvider {
 }
 
 @Composable
-fun DiaryWriteScreen(context: Context, db: DiaryDatabase) {
+fun DiaryWriteScreen(
+    router: NavigationRouter,
+    context: Context,
+    db: DiaryDatabase
+) {
     var titleText by remember { mutableStateOf("") }
     var contentText by remember { mutableStateOf("") }
 
@@ -280,6 +285,8 @@ fun DiaryWriteScreen(context: Context, db: DiaryDatabase) {
                             titleText = ""
                             contentText = ""
                             selectedImageUri = null
+
+                            router.navigateTo(Screen.Home)
                         }
                     },
                     colors = ButtonDefaults.buttonColors(

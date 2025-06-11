@@ -44,6 +44,8 @@ android {
 }
 
 dependencies {
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.5")
     // Room
     implementation("androidx.room:room-runtime:2.6.1")
     // 자바용 Room

@@ -39,12 +39,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
 import java.time.format.DateTimeFormatter
@@ -56,10 +63,29 @@ data class EmotionEntry(
     val color: Color
 )
 
-data class ImageWithDate(
-    val drawableResId: Int,
-    val date: String
-)
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object DiaryWrite : Screen("dirayWrite")
+    data class DiaryDetail(val id: Int) : Screen("diary/{id}") {
+        fun createRoute() = "diary/$id"
+    }
+}
+
+class NavigationRouter(private val navController: NavController) {
+
+    fun navigateTo(screen: Screen) {
+        val route = when (screen) {
+            is Screen.Home -> Screen.Home.route
+            is Screen.DiaryWrite -> Screen.DiaryWrite.route
+            is Screen.DiaryDetail -> screen.createRoute()
+        }
+        navController.navigate(route)
+    }
+
+    fun popBack() {
+        navController.popBackStack()
+    }
+}
 
 class MainActivity : ComponentActivity() {
     val emotionDatas = listOf(
@@ -78,14 +104,35 @@ class MainActivity : ComponentActivity() {
             val db = DatabaseProvider.getDatabase(context)  // 싱글톤으로 가져오기
 
             OneFrameTheme {
-                HomeScreen(
-                    emotionDatas,
-                    db
-                )
-//                DiaryWriteScreen(
-//                    context,
-//                    db
-//                )
+                val navController = rememberNavController()
+                val router = remember { NavigationRouter(navController) }
+                NavHost(
+                    navController = navController,
+                    startDestination = Screen.Home.route
+                ) {
+                    composable(Screen.Home.route) {
+                        HomeScreen(
+                            router,
+                            emotionDatas,
+                            db
+                        )
+                    }
+                    composable(Screen.DiaryWrite.route) {
+                        DiaryWriteScreen(
+                            router,
+                            context,
+                            db
+                        )
+                    }
+//                    composable(
+//                        Screen.DiaryDetail("").route,
+//                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+//                    ) { backStackEntry ->
+//                        val id = backStackEntry.arguments?.getInt("id") ?: 0
+//                        DiaryDetailScreen(router, id)
+//                    }
+                }
+
             }
         }
     }
@@ -93,6 +140,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(
+    router: NavigationRouter,
     emotionDatas: List<EmotionEntry>,
     db: DiaryDatabase
 ) {
@@ -122,7 +170,10 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        ImageCarousel(diaryListState)
+        ImageCarousel(
+            router,
+            diaryListState
+        )
 
         Spacer(modifier = Modifier.height(15.dp))
 
@@ -131,11 +182,16 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(50.dp))
 
         EmotionDonutChartWithLegend(emotionDatas)
+
+        Button(onClick = { router.navigateTo(Screen.DiaryWrite) }) {
+            Text("하루 기록하기")
+        }
     }
 }
 
 @Composable
 fun ImageCarousel(
+    router: NavigationRouter,
     diaryListState: MutableState<List<DiaryEntry>>,
     modifier: Modifier = Modifier
 ) {
@@ -165,7 +221,7 @@ fun ImageCarousel(
                 )
 
                 Text(
-                    text = "{entry.createdAt}",
+                    text = "${entry.createdAt}",
                     modifier = Modifier.align(Alignment.BottomStart),
                     color = Color.White,
                     fontSize = 12.sp
