@@ -1,10 +1,13 @@
 package com.example.oneframe
 
 import android.R.attr.entries
+import android.media.Image
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,26 +39,42 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import java.time.format.DateTimeFormatter
+import kotlin.collections.mapOf
 
-// 샘플 데이터
-val sampleList = listOf("한강", "성수", "여의도", "성북천", "더현대서울")
 // Example emotion entries with color and percent
-data class EmotionEntry(val label: String, val percent: Float, val color: Color)
-val emotionDatas = listOf(
-    EmotionEntry("행복", 0.32f, Color(0xFF2196F3)),   // Blue
-    EmotionEntry("슬픔", 0.15f, Color(0xFF00BCD4)),   // Cyan
-    EmotionEntry("기쁨", 0.23f, Color(0xFFE040FB)),   // Magenta
-    EmotionEntry("분노", 0.17f, Color(0xFFFF9800)),   // Orange
-    EmotionEntry("평온", 0.13f, Color(0xFFFFEB3B))    // Yellow
+data class EmotionEntry(
+    val label: String,
+    val percent: Float,
+    val color: Color
+)
+
+data class ImageWithDate(
+    val drawableResId: Int,
+    val date: String
 )
 
 class MainActivity : ComponentActivity() {
+    val emotionDatas = listOf(
+        EmotionEntry("행복", 0.32f, Color(0xFF2196F3)),   // Blue
+        EmotionEntry("슬픔", 0.15f, Color(0xFF00BCD4)),   // Cyan
+        EmotionEntry("기쁨", 0.23f, Color(0xFFE040FB)),   // Magenta
+        EmotionEntry("분노", 0.17f, Color(0xFFFF9800)),   // Orange
+        EmotionEntry("평온", 0.13f, Color(0xFFFFEB3B))    // Yellow
+    )
+
+    val imageWithDates = listOf(
+        ImageWithDate(R.drawable.ewha_village, "13일"),
+        ImageWithDate(R.drawable.japan, "13일"),
+        ImageWithDate(R.drawable.sky, "13일"),
+        ImageWithDate(R.drawable.suwon, "13일")
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -81,7 +100,7 @@ class MainActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(30.dp))
 
-                    ImageCarousel(sampleList)
+                    ImageCarousel(imageWithDates)
 
                     Spacer(modifier = Modifier.height(15.dp))
 
@@ -98,10 +117,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ImageCarousel(
-    items: List<String>,   // 예: 이미지 URL 리스트
+    imageList: List<ImageWithDate>,
     modifier: Modifier = Modifier
 ) {
     val carouselSize = 280.dp
+
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
@@ -109,16 +129,24 @@ fun ImageCarousel(
         horizontalArrangement = Arrangement.spacedBy(8.dp),  // 항목 사이 간격
 //        contentPadding = PaddingValues(horizontal = 16.dp)   // 양쪽 여백
     ) {
-        items(items) { item ->
+        items(imageList) { item ->
             Box(
                 modifier = Modifier
                     .width(carouselSize) // 아이템 너비
                     .fillMaxHeight()
-                    .background(Color.Gray, RoundedCornerShape(8.dp))  // 예시: 이미지 대신 배경색
             ) {
+                Image(
+                    painter = painterResource(id = item.drawableResId),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop, // 꽉 차게 채우기
+                    modifier = Modifier
+                        .matchParentSize()  // 부모 Box와 같은 크기로
+                        .clip(RoundedCornerShape(8.dp))
+                )
+
                 Text(
-                    text = item,
-                    modifier = Modifier.align(Alignment.Center),
+                    text = item.date,
+                    modifier = Modifier.align(Alignment.TopStart),
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
@@ -273,7 +301,12 @@ fun EmotionDonutChartWithLegend(
                 for (entry in entries) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 2.dp)
+                        modifier = Modifier
+                            .padding(vertical = 2.dp)
+                            .clickable {
+                                Log.i("EmotionChart", "$entry")
+
+                            }
                     ) {
                         Box(
                             modifier = Modifier
@@ -307,6 +340,7 @@ fun EmotionDonutChartWithLegend(
 // 다이어리 헤더와 리스트가 함께 작성된 뷰
 @Composable
 fun DiaryList(
+    sampleList: List<String>,
     modifier: Modifier = Modifier
 ) {
     Column(
