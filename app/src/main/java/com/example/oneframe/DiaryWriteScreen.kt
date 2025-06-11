@@ -21,13 +21,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,8 +55,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.room.Dao
 import androidx.room.Database
@@ -75,6 +83,7 @@ import kotlin.contracts.contract
 data class DiaryEntry(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
+    val selectedEmotion: String,
     val content: String,
     val imageUri: String,
     val createdAt: Long,
@@ -125,6 +134,32 @@ data class DiaryFormState(
 ) : Parcelable
 
 @Composable
+private fun emotionList(
+    selectedEmotion: String,
+    onEmotionSelected: (String) -> Unit
+) {
+    val emotions = listOf("행복", "슬픔", "기쁨", "분노", "평온")
+
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(emotions) { emotion ->
+            Button(
+                onClick = { onEmotionSelected(emotion) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (selectedEmotion == emotion) MaterialTheme.colorScheme.primary else Color.LightGray,
+                    contentColor = Color.White
+                ),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Text(emotion)
+            }
+        }
+    }
+}
+
+@Composable
 fun DiaryWriteScreen(
     router: NavigationRouter,
     context: Context,
@@ -134,6 +169,7 @@ fun DiaryWriteScreen(
     var title: String by remember { mutableStateOf("") }
     var content: String by remember { mutableStateOf("") }
     var selectedImageUri: Uri? by remember { mutableStateOf(null) }
+    var selectedEmotion: String by remember { mutableStateOf("") }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -173,6 +209,13 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(5.dp))
+
+            emotionList(
+                selectedEmotion,
+                onEmotionSelected = { selectedEmotion = it }
             )
 
             Spacer(modifier = Modifier.height(5.dp))
@@ -221,7 +264,7 @@ fun DiaryWriteScreen(
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(450.dp)
+                    .height(400.dp)
             )
 
             Spacer(modifier = Modifier.height(15.dp))
@@ -280,6 +323,7 @@ fun DiaryWriteScreen(
                             // Room DB에 저장
                             val entry = DiaryEntry(
                                 title = title,
+                                selectedEmotion = selectedEmotion,
                                 content = content,
                                 imageUri = savedUri.toString(),
                                 createdAt = currentTime,
