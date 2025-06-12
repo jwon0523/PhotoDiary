@@ -199,62 +199,63 @@ class MainActivity : ComponentActivity() {
             val selectedItem = remember { mutableStateOf<BottomNavItem>(BottomNavItem.Home) }
 
             OneFrameTheme {
-                Scaffold(
-                    bottomBar = {
-                        CustomBottomBar(
-                            selectedItem = selectedItem.value,
-                            onItemSelected = { item ->
-                                selectedItem.value = item
-                                router.navigateTo(item) // 클릭 시 Navigation 처리
-                            }
-                        )
-                    }
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = BottomNavItem.Home.route,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable(BottomNavItem.Home.route) {
-                            HomeScreen(
-                                router,
-                                db
-                            )
-                        }
-
-                        composable(BottomNavItem.DiaryCardList.route) {
-                            DiaryListScreen(
-                                router,
-                                db
-                            )
-                        }
-
-                        composable(BottomNavItem.DiaryWrite.route) {
-                            DiaryWriteScreen(
-                                router,
-                                context,
-                                db
-                            )
-                        }
-
-                        composable(BottomNavItem.EmotionStats.route) {
-                            EmotionStatsScreen()
-                        }
-
-                        composable(BottomNavItem.MyPage.route) {
-                            MyPageScreen()
-                        }
-
-                        composable("diary/{id}") { backStackEntry ->
-                            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: return@composable
-                            DiaryDetailScreen(
-                                diaryId = id,
-                                db = db,
-                                router = router
-                            )
-                        }
-                    }
-                }
+//                Scaffold(
+//                    bottomBar = {
+//                        CustomBottomBar(
+//                            selectedItem = selectedItem.value,
+//                            onItemSelected = { item ->
+//                                selectedItem.value = item
+//                                router.navigateTo(item) // 클릭 시 Navigation 처리
+//                            }
+//                        )
+//                    }
+//                ) { innerPadding ->
+//                    NavHost(
+//                        navController = navController,
+//                        startDestination = BottomNavItem.Home.route,
+//                        modifier = Modifier.padding(innerPadding)
+//                    ) {
+//                        composable(BottomNavItem.Home.route) {
+//                            HomeScreen(
+//                                router,
+//                                db
+//                            )
+//                        }
+//
+//                        composable(BottomNavItem.DiaryCardList.route) {
+//                            DiaryListScreen(
+//                                router,
+//                                db
+//                            )
+//                        }
+//
+//                        composable(BottomNavItem.DiaryWrite.route) {
+//                            DiaryWriteScreen(
+//                                router,
+//                                context,
+//                                db
+//                            )
+//                        }
+//
+//                        composable(BottomNavItem.EmotionStats.route) {
+//                            EmotionStatsScreen()
+//                        }
+//
+//                        composable(BottomNavItem.MyPage.route) {
+//                            MyPageScreen()
+//                        }
+//
+//                        composable("diary/{id}") { backStackEntry ->
+//                            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: return@composable
+//                            DiaryDetailScreen(
+//                                diaryId = id,
+//                                db = db,
+//                                router = router
+//                            )
+//                        }
+//                    }
+//                }
+                EmotionAiAnalysisScreen(content = "오늘 너무 힘들었지만 친구랑 밥 먹고 나서 기분이 조금 풀렸어.")
             }
         }
     }

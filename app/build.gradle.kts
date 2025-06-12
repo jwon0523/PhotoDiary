@@ -1,5 +1,6 @@
 import org.gradle.kotlin.dsl.annotationProcessor
 import org.gradle.kotlin.dsl.implementation
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +9,10 @@ plugins {
     id("kotlin-kapt")
     id("kotlin-parcelize")
 }
+
+val localProperties = Properties()
+localProperties.load(project.rootProject.file("local.properties").inputStream())
+val openaiAPIKey = localProperties.getProperty("OPENAI_API_KEY")?: ""
 
 android {
     namespace = "com.example.oneframe"
@@ -21,6 +26,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "OPENAI_API_KEY", "\"$openaiAPIKey\"")
     }
 
     buildTypes {
@@ -40,11 +47,18 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }
 
 dependencies {
+    // OpenAI
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+    // Gson Converter
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.5")
     // Room

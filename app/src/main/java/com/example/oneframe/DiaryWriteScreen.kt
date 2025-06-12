@@ -303,7 +303,7 @@ fun DiaryWriteScreen(
                     modifier = Modifier
                         .shadow(1.5.dp, shape = RoundedCornerShape(20.dp))
                         .background(
-                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(20.dp)
                         )
                 ) {
