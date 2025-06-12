@@ -12,8 +12,6 @@ import android.os.Parcelable
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,17 +26,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -53,23 +47,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.room.Dao
-import androidx.room.Database
-import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.PrimaryKey
-import androidx.room.Query
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import coil.compose.rememberAsyncImagePainter
-import com.example.oneframe.ui.theme.OneFrameTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,7 +56,6 @@ import kotlinx.parcelize.Parcelize
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-import kotlin.contracts.contract
 
 @Parcelize
 data class DiaryFormState(
@@ -101,7 +79,7 @@ private fun emotionList(
             Button(
                 onClick = { onEmotionSelected(emotion) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedEmotion == emotion) MaterialTheme.colorScheme.primary else Color.LightGray,
+                    containerColor = if (selectedEmotion == emotion) MaterialTheme.colorScheme.primaryContainer else Color.LightGray,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(20.dp)
@@ -345,44 +323,9 @@ fun saveBitmapToAppStorage(context: Context, bitmap: Bitmap): Uri {
     return Uri.fromFile(imageFile)
 }
 
-// 이미지 불러오기
-fun getAppImages(context: Context): List<File> {
-    val imagesDir = File(context.filesDir, "images")
-    return imagesDir.listFiles()?.toList() ?: emptyList()
-}
-
-
-
-// 내부 저장소에 비트맵 저장 함수
-fun saveBitmapToInternalStorage(context: Context, bitmap: Bitmap): Uri? {
-    val filename = "IMG_${System.currentTimeMillis()}.jpg"
-    val fos: OutputStream?
-    var imageUri: Uri? = null
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-        }
-        val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-        fos = uri?.let { context.contentResolver.openOutputStream(it) }
-        imageUri = uri
-    } else {
-        val imagesDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val image = File(imagesDir, filename)
-        fos = FileOutputStream(image)
-        imageUri = Uri.fromFile(image)
-    }
-
-    fos?.use {
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-    }
-    return imageUri
-}
-
-// 내부 저장소에서 이미지 파일 삭제 함수
 fun deleteImage(context: Context, imageUriString: String) {
-    val uri = Uri.parse(imageUriString)
-    context.contentResolver.delete(uri, null, null)
+    val file = File(Uri.parse(imageUriString).path ?: return)
+    if (file.exists()) {
+        file.delete()
+    }
 }

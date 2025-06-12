@@ -25,6 +25,16 @@ import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
 
+/*
+* 1. 메인 화면 보여주기
+* 2. 일기 목록 탭으로 이동 -> 일기 내용 보여주기
+* 3. 다시 홈으로 돌아와서 사진과 날짜를 눌러도 확인 가능하다는 것을 보여주기
+* 4. 일기 작성 탭 이동
+* 5. 복붙해서 일기 작성
+* 6. 감정 통계 보여주기
+* */
+
+
 // --- OpenAI API 관련 ---
 data class ChatRequest(
     val model: String = "gpt-3.5-turbo",
