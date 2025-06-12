@@ -255,7 +255,14 @@ class MainActivity : ComponentActivity() {
 //                        }
 //                    }
 //                }
-                EmotionAiAnalysisScreen(content = "오늘 너무 힘들었지만 친구랑 밥 먹고 나서 기분이 조금 풀렸어.")
+                WeeklyEmotionReportScreen(
+                    weeklyDiaryContents = listOf(
+                        "오늘 친구랑 다퉈서 속상했어.",
+                        "커피 한잔하면서 마음이 좀 풀렸어.",
+                        "새로운 프로젝트를 시작해서 기대돼."
+                    ),
+                    db
+                )
             }
         }
     }
