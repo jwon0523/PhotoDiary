@@ -1,6 +1,5 @@
 package com.example.oneframe
 
-import android.R.attr.lineHeight
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,7 +24,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.Header
 import retrofit2.http.POST
-import java.nio.file.WatchEvent
 
 // --- OpenAI API 관련 ---
 data class ChatRequest(
@@ -156,7 +154,6 @@ fun WeeklyEmotionReportScreen(
             .fillMaxSize()
             .systemBarsPadding()
             .padding(horizontal = 20.dp, vertical = 24.dp)
-            .verticalScroll(rememberScrollState())
     ) {
         Box(
             modifier = Modifier
@@ -208,11 +205,12 @@ fun WeeklyEmotionReportScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(8.dp, shape = RoundedCornerShape(8.dp))
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .verticalScroll(rememberScrollState())
         ) {
             Text(
                 text = if (aiResult != null) aiResult!! else "이번주 감정을 분석해드릴게요!\n조금만 기다려주세요",
