@@ -49,6 +49,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.oneframe.ui.theme.Typography
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.Map.entry
 
 @Composable
@@ -199,7 +200,7 @@ fun WeekCalendar(
             }
 
             Text(
-                text = selectedDate.format(DateTimeFormatter.ofPattern("MMMM, d EEEE")),
+                text = selectedDate.format(DateTimeFormatter.ofPattern("M월 d일 E요일", Locale.KOREAN)),
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )

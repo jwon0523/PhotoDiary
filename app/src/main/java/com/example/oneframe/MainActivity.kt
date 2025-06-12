@@ -238,13 +238,29 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(BottomNavItem.EmotionAnalysis.route) {
+                            val context = LocalContext.current
+                            val diaryDao = remember { DatabaseProvider.getDatabase(context).diaryDao() }
+                            var weeklyContents by remember { mutableStateOf<List<String>>(emptyList()) }
+
+                            LaunchedEffect(Unit) {
+                                val allDiaries = diaryDao.getAllDiaries()
+                                val now = LocalDate.now()
+                                val startOfWeek = now.with(DayOfWeek.MONDAY)
+                                val endOfWeek = now.with(DayOfWeek.SUNDAY)
+
+                                val filtered = allDiaries.filter { diary ->
+                                    val diaryDate = Instant.ofEpochMilli(diary.createdAt).atZone(ZoneId.systemDefault()).toLocalDate()
+                                    diaryDate in startOfWeek..endOfWeek
+                                }.map { diary ->
+                                    "${diary.selectedEmotion}: ${diary.content}"
+                                }
+
+                                weeklyContents = filtered
+                            }
+
                             WeeklyEmotionReportScreen(
-                                weeklyDiaryContents = listOf(
-                                    "오늘 친구랑 다퉈서 속상했어.",
-                                    "커피 한잔하면서 마음이 좀 풀렸어.",
-                                    "새로운 프로젝트를 시작해서 기대돼."
-                                ),
-                                db
+                                weeklyDiaryContents = weeklyContents,
+                                db = db
                             )
                         }
 
