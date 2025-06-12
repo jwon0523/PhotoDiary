@@ -1,16 +1,12 @@
 package com.example.oneframe
 
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.os.Environment
 import android.os.Parcelable
 import android.provider.MediaStore
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -242,7 +238,6 @@ fun DiaryWriteScreen(
                 Button(
                     onClick = {
                         selectedImageUri?.let { uri ->
-                            // 선택된 이미지를 내부 저장소에 저장
                             val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                                 ImageDecoder.decodeBitmap(source)
