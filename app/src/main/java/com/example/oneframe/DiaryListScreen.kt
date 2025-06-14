@@ -38,6 +38,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.example.oneframe.data.DiaryDatabase
+import com.example.oneframe.data.DiaryEntry
+import com.example.oneframe.navigation.BottomNavItem
+import com.example.oneframe.navigation.NavigationRouter
+import com.example.oneframe.navigation.toFormattedDate
+import com.example.oneframe.utils.getEmotionColor
+import kotlin.collections.isNullOrEmpty
 
 @Composable
 fun DiaryListScreen(

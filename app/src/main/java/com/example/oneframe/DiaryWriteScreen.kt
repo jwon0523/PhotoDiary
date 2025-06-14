@@ -45,6 +45,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.example.oneframe.data.DiaryDatabase
+import com.example.oneframe.data.DiaryEntry
+import com.example.oneframe.navigation.BottomNavItem
+import com.example.oneframe.navigation.NavigationRouter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
